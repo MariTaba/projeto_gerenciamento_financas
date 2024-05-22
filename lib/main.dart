@@ -1,7 +1,20 @@
+// ignore_for_file: prefer_const_constructors
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'firebase_options.dart';
+import 'principal_view.dart';
 
-void main() {
-  runApp(const MainApp());
+Future<void> main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Firebase Test',
+      home: PrincipalView(),
+    )
+  );
 }
 
 class MainApp extends StatelessWidget {

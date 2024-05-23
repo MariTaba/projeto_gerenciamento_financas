@@ -5,11 +5,6 @@ import 'package:flutter/material.dart';
 import '../view/util.dart';
 
 class LoginController {
-  //
-  // CRIAR CONTA
-  // Adiciona a conta de um novo usuário no serviço
-  // Firebase Authentication
-  //
   criarConta(context, nome, email, senha) {
     FirebaseAuth.instance
         .createUserWithEmailAndPassword(
@@ -17,23 +12,15 @@ class LoginController {
       password: senha,
     )
         .then((resultado) {
-      //Sucesso
-
-      //
-      // Armazenar nome do usuário e UID em uma coleção no BD Firestore
-      //
       FirebaseFirestore.instance.collection('usuarios').add(
         {
           'nome': nome,
           'uid': resultado.user!.uid,
         },
       );
-
       sucesso(context, 'Usuário criado com sucesso!');
       Navigator.pop(context);
     }).catchError((e) {
-      //Erro
-
       switch (e.code) {
         case 'email-already-in-use':
           erro(context, 'O email já foi cadastrado.');
@@ -43,10 +30,6 @@ class LoginController {
       }
     });
   }
-
-  //
-  // LOGIN
-  //
   login(context, email, senha) {
     FirebaseAuth.instance
         .signInWithEmailAndPassword(
@@ -69,10 +52,6 @@ class LoginController {
       }
     });
   }
-
-  //
-  // ESQUECEU A SENHA
-  //
   esqueceuSenha(context, String email) {
     if (email.isNotEmpty) {
       FirebaseAuth.instance.sendPasswordResetEmail(
@@ -84,17 +63,9 @@ class LoginController {
       erro(context, 'Favor preencher o campo email.');
     }
   }
-
-  //
-  // LOGOUT
-  //
   logout() {
     FirebaseAuth.instance.signOut();
   }
-
-  //
-  // ID do Usuário Logado
-  //
   idUsuario() {
     return FirebaseAuth.instance.currentUser!.uid;
   }

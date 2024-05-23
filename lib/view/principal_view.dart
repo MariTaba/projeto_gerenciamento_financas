@@ -22,9 +22,8 @@ class _PrincipalViewState extends State<PrincipalView> {
         actions: [
           IconButton(
             onPressed: () {
-              
             },
-            icon: Icon(Icons.exit_to_app),
+            icon: Icon(Icons.menu),
           )
         ],
       )

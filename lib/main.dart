@@ -9,6 +9,7 @@ import 'view/cadastrar_view.dart';
 import 'view/login_view.dart';
 import 'view/principal_view.dart';
 
+
 Future<void> main() async {
   //
   // Firebase

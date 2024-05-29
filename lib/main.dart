@@ -1,19 +1,27 @@
 // ignore_for_file: prefer_const_constructors
+
+import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:projeto_p2/view/principal_view.dart';
+
 import 'firebase_options.dart';
+import 'view/cadastrar_view.dart';
+import 'view/login_view.dart';
+import 'view/principal_view.dart';
 
 Future<void> main() async {
+  //
+  // Firebase
+  //
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(
-    MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Firebase Test',
-      home: PrincipalView(),
-    )
+    DevicePreview(
+      enabled: false,
+      builder: (context) => MainApp(),
+    ),
   );
 }
 
@@ -22,12 +30,14 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      initialRoute: 'login',
+      routes: {
+        'login': (context) => LoginView(),
+        'cadastrar': (context) => CadastrarView(),
+        'principal':(context) => PrincipalView(),
+      },
     );
   }
 }

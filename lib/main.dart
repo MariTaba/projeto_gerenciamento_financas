@@ -3,11 +3,11 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:projeto_p2/view/planilha_view.dart';
 import 'firebase_options.dart';
 import 'view/cadastrar_view.dart';
 import 'view/login_view.dart';
 import 'view/principal_view.dart';
-
 
 Future<void> main() async {
   await Firebase.initializeApp(
@@ -33,7 +33,14 @@ class MainApp extends StatelessWidget {
       routes: {
         'login': (context) => LoginView(),
         'cadastrar': (context) => CadastrarView(),
-        'principal':(context) => PrincipalView(),
+        'principal': (context) => PrincipalView(),
+        'planilha': (context) {
+          final Map<String, Object?> arguments = ModalRoute.of(context)!
+              .settings
+              .arguments as Map<String, Object?>;
+          final String planilhaId = arguments['planilhaId'] as String;
+          return PlanilhaView(planilhaId: planilhaId);
+        },
       },
     );
   }

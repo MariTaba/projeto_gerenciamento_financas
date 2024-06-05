@@ -65,7 +65,7 @@ class _PlanilhaViewState extends State<PlanilhaView> {
             if (snapshot.connectionState == ConnectionState.done) {
               return Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Nome da Planilha: ${snapshot.data ?? 'Sem nome'}'),
+                child: Text('${snapshot.data ?? 'Sem nome'}'),
               );
             } else if (snapshot.connectionState == ConnectionState.none) {
               return Text("No data");

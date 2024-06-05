@@ -43,7 +43,7 @@ class _PrincipalViewState extends State<PrincipalView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(planilha['nome']),
-                    Text(planilha['valor_total']?.toString() ?? '0'),
+                    Text(planilha['valor total']?.toString() ?? '0'),
                   ],
                 ),
                 onTap: () {
@@ -164,7 +164,7 @@ class _PrincipalViewState extends State<PrincipalView> {
                             .add({
                           'nome': planilhaNomeController.text,
                           'uid': userUID,
-                          'valor_total': 0,
+                          'valor total': 0,
                         });
                       }
                       Navigator.of(context).pop();

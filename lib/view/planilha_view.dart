@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -53,6 +55,13 @@ class _PlanilhaViewState extends State<PlanilhaView> {
       total += valorRestante;
     }
     return total;
+  }
+  Future<void> updateValorTotal() async {
+    double valorTotal = await calculateRemainingValue();
+    await firestore
+        .collection('planilhas')
+        .doc(widget.planilhaId)
+        .update({'valorTotal': valorTotal});
   }
 
   @override
@@ -411,6 +420,7 @@ class _PlanilhaViewState extends State<PlanilhaView> {
       'valorParcial': valorParcial,
       'dataCriacao': DateTime.now(),
     });
+    updatePlanilhaValorRestante();
     updatePlanilhaTotal();
     Navigator.pop(context);
   }
@@ -428,5 +438,23 @@ class _PlanilhaViewState extends State<PlanilhaView> {
     await firestore.collection('planilhas').doc(widget.planilhaId).update({
       'valorTotal': total,
     });
+    updatePlanilhaValorRestante();
   }
+  void updatePlanilhaValorRestante() async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('itens')
+      .where('planilhaId', isEqualTo: widget.planilhaId)
+      .get();
+  double total = 0.0;
+  for (var doc in querySnapshot.docs) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    double valorRestante = ((data['valorTotal'] / data['numeroParcelas']) *
+        (data['numeroParcelas'] - data['parcelaAtual']));
+    total += valorRestante;
+  }
+  await FirebaseFirestore.instance
+      .collection('planilhas')
+      .doc(widget.planilhaId)
+      .update({'valorRestante': total});
+}
 }

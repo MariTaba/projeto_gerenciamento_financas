@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import '../view/util.dart';
 
 class LoginController {
-  criarConta(context, nome, email, senha) {
+  criarConta(context, nome, sobrenome, telefone, email, senha) {
     FirebaseAuth.instance
         .createUserWithEmailAndPassword(
       email: email,
@@ -15,6 +14,8 @@ class LoginController {
       FirebaseFirestore.instance.collection('usuarios').add(
         {
           'nome': nome,
+          'sobrenome': sobrenome,
+          'dataTelefone': telefone,
           'uid': resultado.user!.uid,
         },
       );
@@ -30,6 +31,7 @@ class LoginController {
       }
     });
   }
+
   login(context, email, senha) {
     FirebaseAuth.instance
         .signInWithEmailAndPassword(
@@ -52,6 +54,7 @@ class LoginController {
       }
     });
   }
+
   esqueceuSenha(context, String email) {
     if (email.isNotEmpty) {
       FirebaseAuth.instance.sendPasswordResetEmail(
@@ -63,9 +66,11 @@ class LoginController {
       erro(context, 'Favor preencher o campo email.');
     }
   }
+
   logout() {
     FirebaseAuth.instance.signOut();
   }
+
   idUsuario() {
     return FirebaseAuth.instance.currentUser!.uid;
   }

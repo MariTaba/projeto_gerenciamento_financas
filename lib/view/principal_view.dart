@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 class PrincipalView extends StatefulWidget {
   const PrincipalView({Key? key}) : super(key: key);
-  
+
   @override
   _PrincipalViewState createState() => _PrincipalViewState();
 }
@@ -42,119 +42,32 @@ class _PrincipalViewState extends State<PrincipalView> {
             return Text("Carregando");
           }
 
-          return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              DocumentSnapshot planilha = snapshot.data!.docs[index];
-              Map<String, dynamic> data =
-                  planilha.data() as Map<String, dynamic>;
-              double valorTotal = 0.0;
-              if (data['valorTotal'] != null) {
-                valorTotal = data['valorTotal'] is double
-                    ? data['valorTotal']
-                    : double.parse(data['valorTotal'].toString());
+          if (snapshot.data != null) {
+            List<DocumentSnapshot> planilhasEntrada = [];
+            List<DocumentSnapshot> planilhasSaida = [];
+
+            for (var doc in snapshot.data!.docs) {
+              Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+              if (data['tipoPlanilha'] == 'E') {
+                planilhasEntrada.add(doc);
+              } else if (data['tipoPlanilha'] == 'S') {
+                planilhasSaida.add(doc);
               }
-              return ListTile(
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(data['nome'] ?? 'Sem nome'),
-                    Text(
-                        'Valor do próximo vencimento: ${valorTotal.toStringAsFixed(2)}'),
-                  ],
-                ),
-                onTap: () {
-                  if (data['tipoPlanilha'] == 'S') {
-                    Navigator.of(context).pushNamed(
-                      'planilha',
-                      arguments: {'planilhaId': planilha.id},
-                    );
-                  } else if (data['tipoPlanilha'] == 'E') {
-                    Navigator.of(context).pushNamed(
-                      'entradas',
-                      arguments: {'planilhaId': planilha.id},
-                    );
-                  }
-                },
-                onLongPress: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      TextEditingController planilhaNomeController =
-                          TextEditingController();
-                      return AlertDialog(
-                        title: Text('Renomear ou Excluir'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('Você deseja renomear ou excluir a planilha?'),
-                            TextField(
-                              controller: planilhaNomeController,
-                              decoration: InputDecoration(
-                                  hintText: "Novo nome da planilha"),
-                            ),
-                          ],
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: Text('Renomear'),
-                            onPressed: () async {
-                              await FirebaseFirestore.instance
-                                  .collection('planilhas')
-                                  .doc(planilha.id)
-                                  .update(
-                                      {'nome': planilhaNomeController.text});
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                          TextButton(
-                            child: Text('Excluir'),
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: Text('Confirmação'),
-                                    content: Text(
-                                        'Você tem certeza que deseja excluir esta planilha?'),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        child: Text('Cancelar'),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: Text('Confirmar'),
-                                        onPressed: () async {
-                                          await FirebaseFirestore.instance
-                                              .collection('planilhas')
-                                              .doc(planilha.id)
-                                              .delete();
-                                          Navigator.of(context).pop();
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                          TextButton(
-                            child: Text('Cancelar'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              );
-            },
-          );
+            }
+
+            return ListView(
+              children: <Widget>[
+                Text('Entradas:', style: TextStyle(fontSize: 24)),
+                ...planilhasEntrada.map((planilha) =>
+                    buildListTile(planilha, 'Saldo Total:', context)),
+                Text('Saídas:', style: TextStyle(fontSize: 24)),
+                ...planilhasSaida.map((planilha) => buildListTile(
+                    planilha, 'Valor do próximo vencimento:', context)),
+              ],
+            );
+          } else {
+            return Text("No data");
+          }
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -236,6 +149,114 @@ class _PrincipalViewState extends State<PrincipalView> {
         },
         child: Icon(Icons.add),
       ),
+    );
+  }
+
+  Widget buildListTile(
+      DocumentSnapshot planilha, String title, BuildContext context) {
+    Map<String, dynamic> data = planilha.data() as Map<String, dynamic>;
+    double valorTotal = 0.0;
+    if (data['valorTotal'] != null) {
+      valorTotal = data['valorTotal'] is double
+          ? data['valorTotal']
+          : double.parse(data['valorTotal'].toString());
+    }
+    return ListTile(
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(data['nome'] ?? 'Sem nome'),
+          Text('$title ${valorTotal.toStringAsFixed(2)}'),
+        ],
+      ),
+      onTap: () {
+        if (data['tipoPlanilha'] == 'S') {
+          Navigator.of(context).pushNamed(
+            'planilha',
+            arguments: {'planilhaId': planilha.id},
+          );
+        } else if (data['tipoPlanilha'] == 'E') {
+          Navigator.of(context).pushNamed(
+            'entradas',
+            arguments: {'planilhaId': planilha.id},
+          );
+        }
+      },
+      onLongPress: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            TextEditingController planilhaNomeController =
+                TextEditingController();
+            return AlertDialog(
+              title: Text('Renomear ou Excluir'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Você deseja renomear ou excluir a planilha?'),
+                  TextField(
+                    controller: planilhaNomeController,
+                    decoration:
+                        InputDecoration(hintText: "Novo nome da planilha"),
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Renomear'),
+                  onPressed: () async {
+                    await FirebaseFirestore.instance
+                        .collection('planilhas')
+                        .doc(planilha.id)
+                        .update({'nome': planilhaNomeController.text});
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: Text('Excluir'),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('Confirmação'),
+                          content: Text(
+                              'Você tem certeza que deseja excluir esta planilha?'),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text('Cancelar'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            TextButton(
+                              child: Text('Confirmar'),
+                              onPressed: () async {
+                                await FirebaseFirestore.instance
+                                    .collection('planilhas')
+                                    .doc(planilha.id)
+                                    .delete();
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+                TextButton(
+                  child: Text('Cancelar'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

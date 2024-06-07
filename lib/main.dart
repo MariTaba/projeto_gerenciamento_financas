@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto_p2/view/entradas_view.dart';
 import 'package:projeto_p2/view/planilha_view.dart';
 import 'package:projeto_p2/view/servico_busca.dart';
+import 'package:projeto_p2/view/sobre_view.dart';
 import 'firebase_options.dart';
 import 'view/cadastrar_view.dart';
 import 'view/login_view.dart';
@@ -37,6 +38,7 @@ class MainApp extends StatelessWidget {
         'cadastrar': (context) => CadastrarView(),
         'principal': (context) => PrincipalView(),
         'busca': (context) => SearchPage(),
+        'sobre': (context) => SobreView(),
         'planilha': (context) {
           final Map<String, Object?> arguments = ModalRoute.of(context)!
               .settings

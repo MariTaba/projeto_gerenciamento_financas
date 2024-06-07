@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sized_box_for_whitespace
 
 import 'package:flutter/material.dart';
-
 import '../controller/login_controller.dart';
 
 class CadastrarView extends StatefulWidget {
@@ -15,6 +14,10 @@ class _CadastrarViewState extends State<CadastrarView> {
   var txtNome = TextEditingController();
   var txtEmail = TextEditingController();
   var txtSenha = TextEditingController();
+  final TextEditingController txtSobrenome = TextEditingController();
+  final TextEditingController txtTelefone = TextEditingController();
+
+  final focusNode = FocusNode();
 
   @override
   void initState() {
@@ -38,6 +41,22 @@ class _CadastrarViewState extends State<CadastrarView> {
               decoration: InputDecoration(
                   labelText: 'Nome',
                   prefixIcon: Icon(Icons.person),
+                  border: OutlineInputBorder()),
+            ),
+            SizedBox(height: 15),
+            TextField(
+              controller: txtSobrenome,
+              decoration: InputDecoration(
+                  labelText: 'Sobrenome',
+                  prefixIcon: Icon(Icons.person),
+                  border: OutlineInputBorder()),
+            ),
+            SizedBox(height: 15),
+            TextField(
+              controller: txtTelefone,
+              decoration: InputDecoration(
+                  labelText: 'Telefone',
+                  prefixIcon: Icon(Icons.phone),
                   border: OutlineInputBorder()),
             ),
             SizedBox(height: 15),
@@ -71,10 +90,12 @@ class _CadastrarViewState extends State<CadastrarView> {
                   style: OutlinedButton.styleFrom(
                     minimumSize: Size(140, 40),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     LoginController().criarConta(
                       context,
                       txtNome.text,
+                      txtSobrenome.text,
+                      txtTelefone.text,
                       txtEmail.text,
                       txtSenha.text,
                     );

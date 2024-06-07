@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sized_box_for_whitespace
 
 import 'package:flutter/material.dart';
+import 'package:projeto_p2/view/sobre_view.dart';
 import '../controller/login_controller.dart';
 
 class LoginView extends StatefulWidget {
@@ -117,6 +118,19 @@ class _LoginViewState extends State<LoginView> {
                 );
               },
               child: Text('Entrar'),
+            ),
+            SizedBox(height: 15),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(200, 40),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SobreView()),
+                );
+              },
+              child: Text('Sobre'),
             ),
             SizedBox(height: 40),
             Row(

@@ -56,12 +56,13 @@ class _PlanilhaViewState extends State<PlanilhaView> {
     }
     return total;
   }
-  Future<void> updateValorTotal() async {
-    double valorTotal = await calculateRemainingValue();
+
+  Future<void> updateValorRestante() async {
+    double valorRestante = await calculateRemainingValue();
     await firestore
         .collection('planilhas')
         .doc(widget.planilhaId)
-        .update({'valorTotal': valorTotal});
+        .update({'valorRestante': valorRestante});
   }
 
   @override
@@ -82,6 +83,14 @@ class _PlanilhaViewState extends State<PlanilhaView> {
             return CircularProgressIndicator();
           },
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              Navigator.pushNamed(context, 'busca');
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(60.0),
           child: Column(
@@ -328,6 +337,11 @@ class _PlanilhaViewState extends State<PlanilhaView> {
                                             'parcelaAtual': int.parse(
                                                 parcelaAtualController.text),
                                             'valorParcial': valorParcial,
+                                            'buscaNome': nomeController.text
+                                                .toLowerCase(),
+                                            'buscaDescricao':
+                                                descricaoController.text
+                                                    .toLowerCase(),
                                           });
                                           updatePlanilhaTotal();
                                           Navigator.of(context).pop();
@@ -419,6 +433,8 @@ class _PlanilhaViewState extends State<PlanilhaView> {
       'parcelaAtual': int.parse(parcelaAtualController.text),
       'valorParcial': valorParcial,
       'dataCriacao': DateTime.now(),
+      'buscaNome': nomeController.text.toLowerCase(),
+      'buscaDescricao': descricaoController.text.toLowerCase(),
     });
     updatePlanilhaValorRestante();
     updatePlanilhaTotal();
@@ -440,21 +456,22 @@ class _PlanilhaViewState extends State<PlanilhaView> {
     });
     updatePlanilhaValorRestante();
   }
+
   void updatePlanilhaValorRestante() async {
-  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-      .collection('itens')
-      .where('planilhaId', isEqualTo: widget.planilhaId)
-      .get();
-  double total = 0.0;
-  for (var doc in querySnapshot.docs) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    double valorRestante = ((data['valorTotal'] / data['numeroParcelas']) *
-        (data['numeroParcelas'] - data['parcelaAtual']));
-    total += valorRestante;
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('itens')
+        .where('planilhaId', isEqualTo: widget.planilhaId)
+        .get();
+    double total = 0.0;
+    for (var doc in querySnapshot.docs) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      double valorRestante = ((data['valorTotal'] / data['numeroParcelas']) *
+          (data['numeroParcelas'] - data['parcelaAtual']));
+      total += valorRestante;
+    }
+    await FirebaseFirestore.instance
+        .collection('planilhas')
+        .doc(widget.planilhaId)
+        .update({'valorRestante': total});
   }
-  await FirebaseFirestore.instance
-      .collection('planilhas')
-      .doc(widget.planilhaId)
-      .update({'valorRestante': total});
-}
 }

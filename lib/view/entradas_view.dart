@@ -31,7 +31,7 @@ class _EntradasViewState extends State<EntradasView> {
 
   Future<void> updatePlanilhaTotal() async {
     final querySnapshot = await firestore
-        .collection('itens')
+        .collection('entradas')
         .where('planilhaId', isEqualTo: widget.planilhaId)
         .get();
 
@@ -46,7 +46,7 @@ class _EntradasViewState extends State<EntradasView> {
 
   Future<double> fetchValorTotal() async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('Entradas')
+        .collection('entradas')
         .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
         .where('planilhaId', isEqualTo: widget.planilhaId)
         .get();
@@ -81,6 +81,14 @@ class _EntradasViewState extends State<EntradasView> {
               return CircularProgressIndicator();
             },
           ),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                Navigator.pushNamed(context, 'busca');
+              },
+            ),
+          ],
           bottom: PreferredSize(
             preferredSize: Size.fromHeight(60.0),
             child: Column(
@@ -108,7 +116,7 @@ class _EntradasViewState extends State<EntradasView> {
         ),
         body: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
-              .collection('Entradas')
+              .collection('entradas')
               .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
               .where('planilhaId', isEqualTo: widget.planilhaId)
               .snapshots(),
@@ -191,8 +199,19 @@ class _EntradasViewState extends State<EntradasView> {
                                                   descricaoController.text,
                                               'valor': double.parse(
                                                   valorController.text),
+                                              'buscaNome': nomeController.text
+                                                  .toLowerCase(),
+                                              'buscaDescricao':
+                                                  descricaoController.text
+                                                      .toLowerCase(),
                                             });
                                             updatePlanilhaTotal();
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                        TextButton(
+                                          child: Text('Cancelar'),
+                                          onPressed: () {
                                             Navigator.of(context).pop();
                                           },
                                         ),
@@ -256,7 +275,6 @@ class _EntradasViewState extends State<EntradasView> {
               builder: (BuildContext context) {
                 final _formKey = GlobalKey<FormState>();
 
-                // Limpe os controladores antes de usar
                 nomeController.clear();
                 descricaoController.clear();
                 valorController.clear();
@@ -312,13 +330,16 @@ class _EntradasViewState extends State<EntradasView> {
                       child: Text('Salvar'),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          // Use os valores dos controladores em vez das variáveis locais
-                          firestore.collection('Entradas').add({
+                          firestore.collection('entradas').add({
                             'nome': nomeController.text,
                             'descricao': descricaoController.text,
                             'valor': double.parse(valorController.text),
                             'uid': FirebaseAuth.instance.currentUser!.uid,
+                            'buscaNome': nomeController.text.toLowerCase(),
+                            'buscaDescricao':
+                                descricaoController.text.toLowerCase(),
                             'planilhaId': widget.planilhaId,
+                            'dataCriacao': DateTime.now(),
                           });
                           updatePlanilhaTotal();
                           Navigator.of(context).pop();

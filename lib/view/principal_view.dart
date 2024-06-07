@@ -221,7 +221,6 @@ class _PrincipalViewState extends State<PrincipalView> {
                                 .add({
                               'nome': planilhaNomeController.text,
                               'uid': userUID,
-                              'valorRestante': 0.0,
                               'tipoPlanilha': tipoPlanilha,
                             });
                           }

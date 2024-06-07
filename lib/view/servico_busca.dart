@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -11,56 +13,117 @@ class _SearchPageState extends State<SearchPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String dropdownValue = 'Tudo';
   String searchTerm = '';
+  String sortType = 'nome';
   List<DocumentSnapshot> searchResults = [];
 
   void search() async {
-    List<QueryDocumentSnapshot> searchResults = [];
+    setState(() {
+      searchResults.clear();
+    });
+    String lowerCaseSearchTerm = searchTerm.toLowerCase();
 
     if (dropdownValue == 'Tudo') {
-      Query queryEntrada = _firestore
-          .collection('Entradas')
+      Query queryEntradaNome = _firestore
+          .collection('entradas')
           .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-          .where('nome', isEqualTo: searchTerm);
+          .where('buscaNome', isEqualTo: lowerCaseSearchTerm);
 
-      Query querySaida = _firestore
+      Query querySaidaNome = _firestore
           .collection('itens')
           .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-          .where('nome', isEqualTo: searchTerm);
+          .where('buscaNome', isEqualTo: lowerCaseSearchTerm);
 
-      final querySnapshotEntrada = await queryEntrada.get();
-      final querySnapshotSaida = await querySaida.get();
+      final querySnapshotEntradaNome = await queryEntradaNome.get();
+      final querySnapshotSaidaNome = await querySaidaNome.get();
 
-      searchResults = [
-        ...querySnapshotEntrada.docs,
-        ...querySnapshotSaida.docs
-      ];
+      if (querySnapshotEntradaNome.docs.isEmpty &&
+          querySnapshotSaidaNome.docs.isEmpty) {
+        Query queryEntradaDescricao = _firestore
+            .collection('entradas')
+            .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+            .where('buscaDescricao', isEqualTo: lowerCaseSearchTerm);
+
+        Query querySaidaDescricao = _firestore
+            .collection('itens')
+            .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+            .where('buscaDescricao', isEqualTo: lowerCaseSearchTerm);
+
+        final querySnapshotEntradaDescricao = await queryEntradaDescricao.get();
+        final querySnapshotSaidaDescricao = await querySaidaDescricao.get();
+
+        searchResults = [
+          ...querySnapshotEntradaDescricao.docs,
+          ...querySnapshotSaidaDescricao.docs
+        ];
+      } else {
+        searchResults = [
+          ...querySnapshotEntradaNome.docs,
+          ...querySnapshotSaidaNome.docs
+        ];
+      }
     } else {
-      Query? query;
+      Query? queryNome;
+      Query? queryDescricao;
 
       switch (dropdownValue) {
         case 'Planilha de Entrada':
-          query = _firestore
-              .collection('Entradas')
+          queryNome = _firestore
+              .collection('entradas')
               .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-              .where('nome', isEqualTo: searchTerm);
+              .where('buscaNome', isEqualTo: lowerCaseSearchTerm);
+
+          queryDescricao = _firestore
+              .collection('entradas')
+              .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+              .where('buscaDescricao', isEqualTo: lowerCaseSearchTerm);
           break;
         case 'Planilha de Saída':
-          query = _firestore
+          queryNome = _firestore
               .collection('itens')
               .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-              .where('nome', isEqualTo: searchTerm);
+              .where('buscaNome', isEqualTo: lowerCaseSearchTerm);
+
+          queryDescricao = _firestore
+              .collection('itens')
+              .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+              .where('buscaDescricao', isEqualTo: lowerCaseSearchTerm);
           break;
       }
 
-      if (query != null) {
-        final querySnapshot = await query.get();
-        searchResults = querySnapshot.docs;
+      if (queryNome != null) {
+        final querySnapshotNome = await queryNome.get();
+
+        if (querySnapshotNome.docs.isEmpty && queryDescricao != null) {
+          final querySnapshotDescricao = await queryDescricao.get();
+          searchResults = querySnapshotDescricao.docs;
+        } else {
+          searchResults = querySnapshotNome.docs;
+        }
       }
     }
 
-    setState(() {
-      this.searchResults = searchResults;
-    });
+    if (sortType == 'nome') {
+      searchResults.sort((a, b) {
+        var aData = a.data() as Map<String, dynamic>;
+        var bData = b.data() as Map<String, dynamic>;
+        String aName = aData['nome'] ?? '';
+        String bName = bData['nome'] ?? '';
+        return aName.compareTo(bName);
+      });
+    } else if (sortType == 'dataCriacao') {
+  searchResults.sort((a, b) {
+    var aData = a.data() as Map<String, dynamic>;
+    var bData = b.data() as Map<String, dynamic>;
+    if (aData['dataCriacao'] is Timestamp && bData['dataCriacao'] is Timestamp) {
+      DateTime aDate = (aData['dataCriacao'] as Timestamp).toDate();
+      DateTime bDate = (bData['dataCriacao'] as Timestamp).toDate();
+      return aDate.compareTo(bDate);
+    } else {
+      return 0;
+    }
+  });
+}
+    setState(() {});
   }
 
   @override
@@ -102,9 +165,29 @@ class _SearchPageState extends State<SearchPage> {
               );
             }).toList(),
           ),
-          ElevatedButton(
-            onPressed: search,
-            child: Text('Buscar'),
+          Row(
+            children: <Widget>[
+              PopupMenuButton<String>(
+                onSelected: (String value) {
+                  setState(() {
+                    sortType = value;
+                    search();
+                  });
+                },
+                itemBuilder: (BuildContext context) {
+                  return <String>['nome', 'dataCriacao'].map((String value) {
+                    return PopupMenuItem<String>(
+                      value: value,
+                      child: Text(value == 'nome' ? 'Nome' : 'Data de Criação'),
+                    );
+                  }).toList();
+                },
+              ),
+              ElevatedButton(
+                onPressed: search,
+                child: Text('Buscar'),
+              ),
+            ],
           ),
           Expanded(
             child: ListView.builder(
@@ -112,9 +195,12 @@ class _SearchPageState extends State<SearchPage> {
               itemBuilder: (context, index) {
                 var data = searchResults[index].data() as Map<String, dynamic>?;
                 if (data != null) {
+                  String planilha =
+                      data['tipoPlanilha'] == 'E' ? 'Entrada' : 'Saída';
                   return ListTile(
                     title: Text('Nome: ${data['nome'] ?? ''}'),
-                    subtitle: Text('Descrição: ${data['descricao'] ?? ''}'),
+                    subtitle: Text(
+                        'Descrição: ${data['descricao'] ?? ''}\nPlanilha: $planilha'),
                   );
                 } else {
                   return ListTile(

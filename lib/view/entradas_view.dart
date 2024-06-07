@@ -29,7 +29,6 @@ class _EntradasViewState extends State<EntradasView> {
     return data['nome'] ?? '';
   }
 
-
   Future<void> updatePlanilhaTotal() async {
     final querySnapshot = await firestore
         .collection('itens')

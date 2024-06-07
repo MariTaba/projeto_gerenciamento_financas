@@ -9,7 +9,7 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-String dropdownValue = 'Tudo';
+  String dropdownValue = 'Tudo';
   String searchTerm = '';
   List<DocumentSnapshot> searchResults = [];
 
@@ -110,7 +110,7 @@ String dropdownValue = 'Tudo';
             child: ListView.builder(
               itemCount: searchResults.length,
               itemBuilder: (context, index) {
-                var data = searchResults[index].data() as Map<String, dynamic>;
+                var data = searchResults[index].data() as Map<String, dynamic>?;
                 if (data != null) {
                   return ListTile(
                     title: Text('Nome: ${data['nome'] ?? ''}'),

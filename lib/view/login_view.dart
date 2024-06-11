@@ -17,13 +17,6 @@ class _LoginViewState extends State<LoginView> {
   var txtEmailEsqueceuSenha = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    txtEmail.text = 'josofeioso@gmail.com';
-    txtSenha.text = 'josofeioso';
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(

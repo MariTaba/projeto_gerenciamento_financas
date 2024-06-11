@@ -14,6 +14,10 @@ class PrincipalView extends StatefulWidget {
 class _PrincipalViewState extends State<PrincipalView> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  double calcularTotal(List<DocumentSnapshot> planilhas) {
+    return planilhas.fold(0, (prev, doc) => prev + doc['valorTotal']);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,19 +59,32 @@ class _PrincipalViewState extends State<PrincipalView> {
               }
             }
 
+            double totalEntrada = calcularTotal(planilhasEntrada);
+            double totalSaida = calcularTotal(planilhasSaida);
+            double saldo = totalEntrada - totalSaida;
+
             return ListView(
-              children: <Widget>[
-                Text('Entradas:', style: TextStyle(fontSize: 24)),
-                ...planilhasEntrada.map((planilha) =>
-                    buildListTile(planilha, 'Saldo Total:', context)),
-                Text('Saídas:', style: TextStyle(fontSize: 24)),
-                ...planilhasSaida.map((planilha) => buildListTile(
-                    planilha, 'Valor do próximo vencimento:', context)),
-              ],
-            );
-          } else {
-            return Text("No data");
-          }
+    children: <Widget>[
+      Text('Saldo Calculado: R\$ ${saldo.toStringAsFixed(2)}',
+          style: TextStyle(fontSize: 24, color: saldo >= 0 ? Colors.green : Colors.red)),
+      Text('Entradas: R\$ ${totalEntrada.toStringAsFixed(2)}',
+          style: TextStyle(fontSize: 24, color: Colors.green[800])),
+      ...planilhasEntrada.map((planilha) => Container(
+            color: Colors.green.withOpacity(0.4),
+            child: buildListTile(planilha, 'Saldo Total:', context),
+          )),
+      Text('Saídas: R\$ ${(totalSaida * -1).toStringAsFixed(2)}',
+          style: TextStyle(fontSize: 24, color: Colors.red[800])),
+      ...planilhasSaida.map((planilha) => Container(
+            color: Colors.red.withOpacity(0.4),
+            child: buildListTile(
+                planilha, 'Valor do próximo vencimento:', context),
+          )),
+    ],
+  );
+} else {
+  return Text('Nenhuma planilha encontrada');
+}
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -135,6 +152,7 @@ class _PrincipalViewState extends State<PrincipalView> {
                               'nome': planilhaNomeController.text,
                               'uid': userUID,
                               'tipoPlanilha': tipoPlanilha,
+                              'valorTotal': 0.0,
                             });
                           }
                           Navigator.of(context).pop();
@@ -160,6 +178,9 @@ class _PrincipalViewState extends State<PrincipalView> {
       valorTotal = data['valorTotal'] is double
           ? data['valorTotal']
           : double.parse(data['valorTotal'].toString());
+    }
+    if (data['tipoPlanilha'] == 'S') {
+      valorTotal *= -1;
     }
     return ListTile(
       title: Column(

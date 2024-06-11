@@ -75,7 +75,10 @@ class _PlanilhaViewState extends State<PlanilhaView> {
             if (snapshot.connectionState == ConnectionState.done) {
               return Align(
                 alignment: Alignment.centerLeft,
-                child: Text('${snapshot.data ?? 'Sem nome'}'),
+                child: Text(
+                  '${snapshot.data ?? 'Sem nome'}',
+                  style: TextStyle(color: Colors.red[600]),
+                ),
               );
             } else if (snapshot.connectionState == ConnectionState.none) {
               return Text("No data");
@@ -103,7 +106,9 @@ class _PlanilhaViewState extends State<PlanilhaView> {
                     return Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                          'Valor Total dos Vencimentos: R\$ ${(snapshot.data ?? 0).toStringAsFixed(2)}'),
+                        'Valor Total dos Vencimentos: R\$ ${(snapshot.data ?? 0).toStringAsFixed(2)}',
+                        style: TextStyle(color: Colors.red),
+                      ),
                     );
                   } else if (snapshot.connectionState == ConnectionState.none) {
                     return Text("No data");
@@ -119,7 +124,9 @@ class _PlanilhaViewState extends State<PlanilhaView> {
                     return Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                          'Valor Restante nas Proximas Faturas: ${snapshot.data?.toStringAsFixed(2) ?? '0'}'),
+                        'Valor Restante nas Proximas Faturas: ${snapshot.data?.toStringAsFixed(2) ?? '0'}',
+                        style: TextStyle(color: Colors.red[900]),
+                      ),
                     );
                   } else if (snapshot.connectionState == ConnectionState.none) {
                     return Text("No data");
@@ -225,192 +232,196 @@ class _PlanilhaViewState extends State<PlanilhaView> {
               double valorRestante = (valorTotal / numeroParcelas) *
                   (numeroParcelas - parcelaAtual);
               return GestureDetector(
-                onLongPress: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Editar ou Deletar'),
-                        content:
-                            Text('Você deseja editar ou deletar este item?'),
-                        actions: [
-                          TextButton(
-                            child: Text('Editar'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-
-                              nomeController.text = data['nome'];
-                              descricaoController.text = data['descricao'];
-                              valorTotalController.text =
-                                  data['valorTotal'].toString();
-                              numeroParcelasController.text =
-                                  data['numeroParcelas'].toString();
-                              parcelaAtualController.text =
-                                  data['parcelaAtual'].toString();
-
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text("Editar Item"),
-                                    content: SingleChildScrollView(
-                                      child: ListBody(
-                                        children: <Widget>[
-                                          TextField(
-                                            controller: nomeController,
-                                            decoration: const InputDecoration(
-                                                labelText: 'Nome'),
-                                          ),
-                                          TextField(
-                                            controller: descricaoController,
-                                            decoration: const InputDecoration(
-                                                labelText: 'Descrição'),
-                                          ),
-                                          TextField(
-                                            controller: valorTotalController,
-                                            decoration: const InputDecoration(
-                                                labelText: 'Valor Total'),
-                                            keyboardType:
-                                                TextInputType.numberWithOptions(
-                                                    decimal: true),
-                                            inputFormatters: [
-                                              FilteringTextInputFormatter.allow(
-                                                  RegExp(r'^\d+\.?\d{0,2}')),
-                                            ],
-                                          ),
-                                          TextField(
-                                            controller:
-                                                numeroParcelasController,
-                                            decoration: const InputDecoration(
-                                                labelText:
-                                                    'Número total de Parcelas'),
-                                            keyboardType:
-                                                TextInputType.numberWithOptions(
-                                                    decimal: false),
-                                            onChanged: (value) {
-                                              if (int.parse(
-                                                      parcelaAtualController
-                                                          .text) >
-                                                  int.parse(value)) {
-                                                parcelaAtualController.text =
-                                                    value;
-                                              }
-                                            },
-                                          ),
-                                          TextField(
-                                            controller: parcelaAtualController,
-                                            decoration: const InputDecoration(
-                                                labelText: 'Parcela atual'),
-                                            keyboardType:
-                                                TextInputType.numberWithOptions(
-                                                    decimal: false),
-                                            onChanged: (value) {
-                                              if (int.parse(value) >
-                                                  int.parse(
-                                                      numeroParcelasController
-                                                          .text)) {
-                                                parcelaAtualController.text =
-                                                    numeroParcelasController
-                                                        .text;
-                                              }
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        child: Text('Salvar'),
-                                        onPressed: () async {
-                                          double valorTotal = double.parse(
-                                              valorTotalController.text);
-                                          int numeroParcelas = int.parse(
-                                              numeroParcelasController.text);
-                                          double valorParcial =
-                                              valorTotal / numeroParcelas;
-                                          await document.reference.update({
-                                            'nome': nomeController.text,
-                                            'descricao':
-                                                descricaoController.text,
-                                            'valorTotal': valorTotal,
-                                            'numeroParcelas': numeroParcelas,
-                                            'parcelaAtual': int.parse(
-                                                parcelaAtualController.text),
-                                            'valorParcial': valorParcial,
-                                            'buscaNome': nomeController.text
-                                                .toLowerCase(),
-                                            'buscaDescricao':
-                                                descricaoController.text
-                                                    .toLowerCase(),
-                                          });
-                                          updatePlanilhaTotal();
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: Text('Cancelar'),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                          TextButton(
-                            child: Text('Deletar'),
-                            onPressed: () async {
-                              final confirmDelete = await showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text("Confirmar"),
-                                    content: const Text(
-                                        "Você realmente deseja deletar este item?"),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(true),
-                                        child: const Text("DELETAR"),
-                                      ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(false),
-                                        child: const Text("CANCELAR"),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                              if (confirmDelete) {
-                                await document.reference.delete();
-                                updatePlanilhaTotal();
+                  onLongPress: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Editar ou Deletar'),
+                          content:
+                              Text('Você deseja editar ou deletar este item?'),
+                          actions: [
+                            TextButton(
+                              child: Text('Editar'),
+                              onPressed: () {
                                 Navigator.of(context).pop();
-                              }
-                            },
-                          )
+
+                                nomeController.text = data['nome'];
+                                descricaoController.text = data['descricao'];
+                                valorTotalController.text =
+                                    data['valorTotal'].toString();
+                                numeroParcelasController.text =
+                                    data['numeroParcelas'].toString();
+                                parcelaAtualController.text =
+                                    data['parcelaAtual'].toString();
+
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text("Editar Item"),
+                                      content: SingleChildScrollView(
+                                        child: ListBody(
+                                          children: <Widget>[
+                                            TextField(
+                                              controller: nomeController,
+                                              decoration: const InputDecoration(
+                                                  labelText: 'Nome'),
+                                            ),
+                                            TextField(
+                                              controller: descricaoController,
+                                              decoration: const InputDecoration(
+                                                  labelText: 'Descrição'),
+                                            ),
+                                            TextField(
+                                              controller: valorTotalController,
+                                              decoration: const InputDecoration(
+                                                  labelText: 'Valor Total'),
+                                              keyboardType: TextInputType
+                                                  .numberWithOptions(
+                                                      decimal: true),
+                                              inputFormatters: [
+                                                FilteringTextInputFormatter
+                                                    .allow(RegExp(
+                                                        r'^\d+\.?\d{0,2}')),
+                                              ],
+                                            ),
+                                            TextField(
+                                              controller:
+                                                  numeroParcelasController,
+                                              decoration: const InputDecoration(
+                                                  labelText:
+                                                      'Número total de Parcelas'),
+                                              keyboardType: TextInputType
+                                                  .numberWithOptions(
+                                                      decimal: false),
+                                              onChanged: (value) {
+                                                if (int.parse(
+                                                        parcelaAtualController
+                                                            .text) >
+                                                    int.parse(value)) {
+                                                  parcelaAtualController.text =
+                                                      value;
+                                                }
+                                              },
+                                            ),
+                                            TextField(
+                                              controller:
+                                                  parcelaAtualController,
+                                              decoration: const InputDecoration(
+                                                  labelText: 'Parcela atual'),
+                                              keyboardType: TextInputType
+                                                  .numberWithOptions(
+                                                      decimal: false),
+                                              onChanged: (value) {
+                                                if (int.parse(value) >
+                                                    int.parse(
+                                                        numeroParcelasController
+                                                            .text)) {
+                                                  parcelaAtualController.text =
+                                                      numeroParcelasController
+                                                          .text;
+                                                }
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          child: Text('Salvar'),
+                                          onPressed: () async {
+                                            double valorTotal = double.parse(
+                                                valorTotalController.text);
+                                            int numeroParcelas = int.parse(
+                                                numeroParcelasController.text);
+                                            double valorParcial =
+                                                valorTotal / numeroParcelas;
+                                            await document.reference.update({
+                                              'nome': nomeController.text,
+                                              'descricao':
+                                                  descricaoController.text,
+                                              'valorTotal': valorTotal,
+                                              'numeroParcelas': numeroParcelas,
+                                              'parcelaAtual': int.parse(
+                                                  parcelaAtualController.text),
+                                              'valorParcial': valorParcial,
+                                              'buscaNome': nomeController.text
+                                                  .toLowerCase(),
+                                              'buscaDescricao':
+                                                  descricaoController.text
+                                                      .toLowerCase(),
+                                            });
+                                            updatePlanilhaTotal();
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                        TextButton(
+                                          child: Text('Cancelar'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                            TextButton(
+                              child: Text('Deletar'),
+                              onPressed: () async {
+                                final confirmDelete = await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text("Confirmar"),
+                                      content: const Text(
+                                          "Você realmente deseja deletar este item?"),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(true),
+                                          child: const Text("DELETAR"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(false),
+                                          child: const Text("CANCELAR"),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                                if (confirmDelete) {
+                                  await document.reference.delete();
+                                  updatePlanilhaTotal();
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                            )
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Container(
+                    color: Colors.red.withOpacity(0.2),
+                    child: ListTile(
+                      title: Text(data['nome']),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                              '${data['descricao']} - Valor Total: ${valorTotal.toStringAsFixed(2)} - Valor neste vencimento: ${data['valorParcial'].toStringAsFixed(2)}'),
+                          Text(
+                              'Parcela: ${parcelaAtual.toString()} de ${numeroParcelas.toString()}'),
+                          Text(
+                              'Valor restante nas proximas faturas : ${valorRestante.toStringAsFixed(2)}'),
                         ],
-                      );
-                    },
-                  );
-                },
-                child: ListTile(
-                  title: Text(data['nome']),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                          '${data['descricao']} - Valor Total: ${valorTotal.toStringAsFixed(2)} - Valor neste vencimento: ${data['valorParcial'].toStringAsFixed(2)}'),
-                      Text(
-                          'Parcela: ${parcelaAtual.toString()} de ${numeroParcelas.toString()}'),
-                      Text(
-                          'Valor restante nas proximas faturas : ${valorRestante.toStringAsFixed(2)}'),
-                    ],
-                  ),
-                ),
-              );
+                      ),
+                    ),
+                  ));
             }).toList(),
           );
         },

@@ -190,26 +190,36 @@ class _SearchPageState extends State<SearchPage> {
             ],
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: searchResults.length,
-              itemBuilder: (context, index) {
-                var data = searchResults[index].data() as Map<String, dynamic>?;
-                if (data != null) {
-                  String planilha =
-                      data['tipoPlanilha'] == 'E' ? 'Entrada' : 'Saída';
-                  return ListTile(
-                    title: Text('Nome: ${data['nome'] ?? ''}'),
-                    subtitle: Text(
-                        'Descrição: ${data['descricao'] ?? ''}\nPlanilha: $planilha'),
-                  );
-                } else {
-                  return ListTile(
-                    title: Text('Documento sem dados'),
-                  );
-                }
-              },
-            ),
-          ),
+  child: ListView.builder(
+    itemCount: searchResults.length,
+    itemBuilder: (context, index) {
+      var data = searchResults[index].data() as Map<String, dynamic>?;
+      if (data != null) {
+        String planilhaId = data['planilhaId'];
+        Future<DocumentSnapshot> planilhaDocFuture = FirebaseFirestore.instance.collection('planilhas').doc(planilhaId).get();
+        return FutureBuilder<DocumentSnapshot>(
+          future: planilhaDocFuture,
+          builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              String planilhaNome = (snapshot.data?.data() as Map<String, dynamic>)?['nome'] ?? '';
+              return ListTile(
+                title: Text('${data['nome'] ?? ''}'),
+                subtitle: Text(
+                    'Descrição: ${data['descricao'] ?? ''}\nPlanilha: $planilhaNome'),
+              );
+            } else {
+              return CircularProgressIndicator();
+            }
+          },
+        );
+      } else {
+        return ListTile(
+          title: Text('Documento sem dados'),
+        );
+      }
+    },
+  ),
+)
         ],
       ),
     );

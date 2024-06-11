@@ -111,18 +111,19 @@ class _SearchPageState extends State<SearchPage> {
         return aName.compareTo(bName);
       });
     } else if (sortType == 'dataCriacao') {
-  searchResults.sort((a, b) {
-    var aData = a.data() as Map<String, dynamic>;
-    var bData = b.data() as Map<String, dynamic>;
-    if (aData['dataCriacao'] is Timestamp && bData['dataCriacao'] is Timestamp) {
-      DateTime aDate = (aData['dataCriacao'] as Timestamp).toDate();
-      DateTime bDate = (bData['dataCriacao'] as Timestamp).toDate();
-      return aDate.compareTo(bDate);
-    } else {
-      return 0;
+      searchResults.sort((a, b) {
+        var aData = a.data() as Map<String, dynamic>;
+        var bData = b.data() as Map<String, dynamic>;
+        if (aData['dataCriacao'] is Timestamp &&
+            bData['dataCriacao'] is Timestamp) {
+          DateTime aDate = (aData['dataCriacao'] as Timestamp).toDate();
+          DateTime bDate = (bData['dataCriacao'] as Timestamp).toDate();
+          return aDate.compareTo(bDate);
+        } else {
+          return 0;
+        }
+      });
     }
-  });
-}
     setState(() {});
   }
 
@@ -190,36 +191,43 @@ class _SearchPageState extends State<SearchPage> {
             ],
           ),
           Expanded(
-  child: ListView.builder(
-    itemCount: searchResults.length,
-    itemBuilder: (context, index) {
-      var data = searchResults[index].data() as Map<String, dynamic>?;
-      if (data != null) {
-        String planilhaId = data['planilhaId'];
-        Future<DocumentSnapshot> planilhaDocFuture = FirebaseFirestore.instance.collection('planilhas').doc(planilhaId).get();
-        return FutureBuilder<DocumentSnapshot>(
-          future: planilhaDocFuture,
-          builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              String planilhaNome = (snapshot.data?.data() as Map<String, dynamic>)?['nome'] ?? '';
-              return ListTile(
-                title: Text('${data['nome'] ?? ''}'),
-                subtitle: Text(
-                    'Descrição: ${data['descricao'] ?? ''}\nPlanilha: $planilhaNome'),
-              );
-            } else {
-              return CircularProgressIndicator();
-            }
-          },
-        );
-      } else {
-        return ListTile(
-          title: Text('Documento sem dados'),
-        );
-      }
-    },
-  ),
-)
+            child: ListView.builder(
+              itemCount: searchResults.length,
+              itemBuilder: (context, index) {
+                var data = searchResults[index].data() as Map<String, dynamic>?;
+                if (data != null) {
+                  String planilhaId = data['planilhaId'];
+                  Future<DocumentSnapshot> planilhaDocFuture = FirebaseFirestore
+                      .instance
+                      .collection('planilhas')
+                      .doc(planilhaId)
+                      .get();
+                  return FutureBuilder<DocumentSnapshot>(
+                    future: planilhaDocFuture,
+                    builder: (BuildContext context,
+                        AsyncSnapshot<DocumentSnapshot> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        String planilhaNome = (snapshot.data?.data()
+                                as Map<String, dynamic>)['nome'] ??
+                            '';
+                        return ListTile(
+                          title: Text('${data['nome'] ?? ''}'),
+                          subtitle: Text(
+                              'Descrição: ${data['descricao'] ?? ''}\nPlanilha: $planilhaNome'),
+                        );
+                      } else {
+                        return CircularProgressIndicator();
+                      }
+                    },
+                  );
+                } else {
+                  return ListTile(
+                    title: Text('Documento sem dados'),
+                  );
+                }
+              },
+            ),
+          )
         ],
       ),
     );

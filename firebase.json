@@ -1,1 +1,37 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"finapp-547a0","appId":"1:742571897742:android:7aec6216a68f0faedfaadf","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"finapp-547a0","configurations":{"android":"1:742571897742:android:7aec6216a68f0faedfaadf","ios":"1:742571897742:ios:4b60d6eec6e23c5adfaadf","web":"1:742571897742:web:5a7addee6f3de92edfaadf"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "finapp-547a0",
+          "appId": "1:742571897742:android:7aec6216a68f0faedfaadf",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "finapp-547a0",
+          "configurations": {
+            "android": "1:742571897742:android:7aec6216a68f0faedfaadf",
+            "ios": "1:742571897742:ios:4b60d6eec6e23c5adfaadf",
+            "web": "1:742571897742:web:5a7addee6f3de92edfaadf"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
